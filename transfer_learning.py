@@ -26,14 +26,14 @@ test_datagen = ImageDataGenerator(rescale=1./255)
 # batches of augmented image data
 train_generator = train_datagen.flow_from_directory(
         'data/train',  # this is the target directory
-        target_size=(299, 299),  # all images will be resized to 150x150
+        target_size=(150, 150),  # all images will be resized to 150x150
         batch_size=batch_size,
         class_mode='binary')  # since we use binary_crossentropy loss, we need binary labels
 
 # this is a similar generator, for validation data
 validation_generator = test_datagen.flow_from_directory(
         'data/validation',
-        target_size=(299, 299),
+        target_size=(150, 150),
         batch_size=batch_size,
         class_mode='binary')
 
@@ -49,8 +49,8 @@ x = base_model.output
 x = GlobalAveragePooling2D()(x)
 # let's add a fully-connected layer
 x = Dense(1024, activation='relu')(x)
-# and a logistic layer -- let's say we have 200 classes
-predictions = Dense(200, activation='softmax')(x)
+# and a logistic layer -- let's say we have 2 classes
+predictions = Dense(2, activation='sigmoid')(x)
 
 # this is the model we will train
 model = Model(input=base_model.input, output=predictions)
@@ -61,7 +61,7 @@ for layer in base_model.layers:
     layer.trainable = False
 
 # compile the model (should be done *after* setting layers to non-trainable)
-model.compile(optimizer='rmsprop', loss='binary_crossentropy', metrics=['accuracy'])
+model.compile(optimizer='rmsprop', loss='sparse_categorical_crossentropy', metrics=['accuracy'])
 
 # train the model on the new data for a few epochs
 # model.fit_generator(...)
